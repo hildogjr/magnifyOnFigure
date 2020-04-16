@@ -713,12 +713,12 @@ switch(currentCaracter)
         %Compress magnifier on the X axis
         if strcmp(currentModifier, 'shift')
             position = getMagnifierPositionInPixels();
-            magnifierPosition(3) = position(3)*(1 - 0.1);
+            magnifierPosition(3) = position(3)*0.9;
             if strcmpi( appDataStruct.globalZoomMode, 'off')
                 magnifierPosition(4) = position(4);
             else
                 %If 'freezeZoomAspectRatio' to 'on', be consistent
-                magnifierPosition(4) = position(4)*(1 - 0.1); 
+                magnifierPosition(4) = position(4)*0.9; 
             end
             magnifierPosition(1) = position(1)-(-position(3)+magnifierPosition(3))/2;
             magnifierPosition(2) = position(2)-(-position(4)+magnifierPosition(4))/2;
@@ -736,12 +736,12 @@ switch(currentCaracter)
         %Compress secondary axes on the X axis        
         if strcmp(currentModifier, 'alt')
             position = getSecondaryAxesPositionInPixels();
-            secondaryAxesPosition(3) = position(3)*(1 - 0.1);
+            secondaryAxesPosition(3) = position(3)*0.9;
             if strcmpi( appDataStruct.globalZoomMode, 'off')
                 secondaryAxesPosition(4) = position(4);
             else
                 %If 'freezeZoomAspectRatio' to 'on', be consistent
-                secondaryAxesPosition(4) = position(4)*(1 - 0.1); 
+                secondaryAxesPosition(4) = position(4)*0.9; 
             end
             secondaryAxesPosition(1) = position(1)-(-position(3)+secondaryAxesPosition(3))/2;
             secondaryAxesPosition(2) = position(2)-(-position(4)+secondaryAxesPosition(4))/2;
@@ -825,9 +825,9 @@ switch(currentCaracter)
                 magnifierPosition(3) = position(3);
             else
                 %If 'freezeZoomAspectRatio' to 'on', be consistent
-                magnifierPosition(3) = position(3)*(1 + 0.1); 
+                magnifierPosition(3) = position(3)*1.1; 
             end
-            magnifierPosition(4) = position(4)*(1 + 0.1);
+            magnifierPosition(4) = position(4)*1.1;
             magnifierPosition(1) = position(1)-(-position(3)+magnifierPosition(3))/2;
             magnifierPosition(2) = position(2)-(-position(4)+magnifierPosition(4))/2;
             setMagnifierPositionInPixels( magnifierPosition );
@@ -848,9 +848,9 @@ switch(currentCaracter)
                 secondaryAxesPosition(3) = position(3);
             else
                 %If 'freezeZoomAspectRatio' to 'on', be consistent
-                secondaryAxesPosition(3) = position(3)*(1 + 0.1); 
+                secondaryAxesPosition(3) = position(3)*1.1;
             end
-            secondaryAxesPosition(4) = position(4)*(1 + 0.1);
+            secondaryAxesPosition(4) = position(4)*1.1;
             secondaryAxesPosition(1) = position(1)-(-position(3)+secondaryAxesPosition(3))/2;
             secondaryAxesPosition(2) = position(2)-(-position(4)+secondaryAxesPosition(4))/2;
             setSecondaryAxesPositionInPixels( secondaryAxesPosition );   
@@ -879,9 +879,9 @@ switch(currentCaracter)
                 magnifierPosition(3) = position(3);
             else
                 %If 'freezeZoomAspectRatio' to 'on', be consistent
-                magnifierPosition(3) = position(3)*(1 - 0.1); 
+                magnifierPosition(3) = position(3)*0.9; 
             end
-            magnifierPosition(4) = position(4)*(1 - 0.1);
+            magnifierPosition(4) = position(4)*0.9;
             magnifierPosition(1) = position(1)-(-position(3)+magnifierPosition(3))/2;
             magnifierPosition(2) = position(2)-(-position(4)+magnifierPosition(4))/2;
             setMagnifierPositionInPixels( magnifierPosition );
@@ -902,9 +902,9 @@ switch(currentCaracter)
                 secondaryAxesPosition(3) = position(3);
             else
                 %If 'freezeZoomAspectRatio' to 'on', be consistent
-                secondaryAxesPosition(3) = position(3)*(1 - 0.1); 
+                secondaryAxesPosition(3) = position(3)*0.9; 
             end
-            secondaryAxesPosition(4) = position(4)*(1 - 0.1);
+            secondaryAxesPosition(4) = position(4)*0.9;
             secondaryAxesPosition(1) = position(1)-(-position(3)+secondaryAxesPosition(3))/2;
             secondaryAxesPosition(2) = position(2)-(-position(4)+secondaryAxesPosition(4))/2;
             setSecondaryAxesPositionInPixels( secondaryAxesPosition );        
@@ -2041,10 +2041,10 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function defaultPosition = computeSecondaryAxesDefaultPosition()
 
-global appDataStruct  
+global appDataStruct
 
-if isempty(appDataStruct)     
-    return; 
+if isempty(appDataStruct)
+    return
 end
 
 % If image, defualt aspect ratio of magnifier and secondary axes to [1, 1]
@@ -2061,7 +2061,7 @@ if plotFlag
     secondaryAxisPosition_H = mainAxesPosition(4)*0.3;
     secondaryAxisPosition_X = mainAxesPosition(1)+mainAxesPosition(3)-secondaryAxisPosition_W-10;
     secondaryAxisPosition_Y = mainAxesPosition(2)+mainAxesPosition(4)-secondaryAxisPosition_H-10;
-else
+else%if imageFlag
     %Set initial position and size for secondary axis
     secondaryAxisPosition_W = mainAxesPosition(3)*0.3;
     secondaryAxisPosition_H = mainAxesPosition(4)*0.3;
@@ -2069,12 +2069,8 @@ else
     secondaryAxisPosition_Y = mainAxesPosition(2)+mainAxesPosition(4)-secondaryAxisPosition_H-10;
 end
 
-defaultPosition = [...
-                        secondaryAxisPosition_X...
-                        secondaryAxisPosition_Y...
-                        secondaryAxisPosition_W...
-                        secondaryAxisPosition_H...
-                        ];
+defaultPosition = [secondaryAxisPosition_X, secondaryAxisPosition_Y...
+                    secondaryAxisPosition_W, secondaryAxisPosition_H];
                         
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
