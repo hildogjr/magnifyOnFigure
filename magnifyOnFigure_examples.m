@@ -2,53 +2,54 @@
 % NAME: magnifyOnFigure_examples
 % 
 % AUTHOR: David Fernandez Prim (david.fernandez.prim@gmail.com)
+% REVISION: Hildo Guillardi Júnior
 %
 % PURPOSE: Shows the funcionality of 'magnifyOnFigure'
 % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-clc;
+clc
 clear all
 close all
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Default interactive mode
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-close all;
+close all
 disp( sprintf('This is the default interactive operation mode of ''magnifyOnFigure''') ) 
 fig = figure;
-hold on;
-plot(rand(100,1), 'b'); plot(rand(300, 1), 'r', 'LineSmooth','on'); 
-grid on;
-hold off;
+hold on
+plot(rand(100,1), 'b'); plot(rand(300, 1), 'r'); 
+grid on
+hold off
 magnifyOnFigure;
 disp('Press a key...')
-pause;
+pause
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Figure handle passed as an input argument
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-close all;
+close all
 disp( sprintf('The figure handle is here passed as an input argument.') ) 
 fig = figure;
-hold on;
+hold on
 plot(rand(100,1), 'b'); plot(rand(300, 1), 'r'); 
-grid on;
-hold off;
+grid on
+hold off
 magnifyOnFigure(fig);
 disp('Press a key...')
-pause;
+pause
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Properties (in interactive mode)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-close all;
+close all
 disp( sprintf('Playing arround with the properties in interactive mode...') ) 
 figHandler = figure;
-hold on;
+hold on
 plot(rand(100,1), 'b'); plot(rand(300, 1), 'r'); 
-grid on;
-hold off; 
+grid on
+hold off 
 ylim([0 2]);
 magnifyOnFigure(...
         figHandler,...
@@ -63,19 +64,19 @@ magnifyOnFigure(...
         'secondaryAxesFaceColor', [0.91 0.91 0.91]... 
             ); 
 disp('Press a key...')
-pause;
+pause
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Properties (in manual mode)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-close all;
+close all
 disp( sprintf('Or in manual mode.') ) 
 figHandler = figure;
-hold on;
+hold on
 plot(rand(100,1), 'b'); plot(rand(300, 1), 'r'); 
-grid on;
-hold off; 
+grid on
+hold off 
 ylim([0 2]);
 magnifyOnFigure(...
         figHandler,...
@@ -89,13 +90,13 @@ magnifyOnFigure(...
         'secondaryAxesFaceColor', [0.91 0.91 0.91]... 
             ); 
 disp('Press a key...')
-pause;
+pause
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Working on images also
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-close all;
+close all
 disp( sprintf('How the tool works on images.') ) 
 h = figure; 
 load clown; 
@@ -109,7 +110,7 @@ magnifyOnFigure(h, 'displayLinkStyle', 'straight',...
                     'edgeWidth', 2);
                 
 disp('Press a key...')
-pause;
+pause
 close all
                 
              
@@ -117,7 +118,7 @@ close all
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Working on contour plots
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-close all;
+close all
 disp( sprintf('How the tool works on contour plots.') ) 
 scrsz = get(0, 'ScreenSize');
 h = figure('Position', [0.01*scrsz(3), 0.25*scrsz(4), 0.65*scrsz(3), 0.60*scrsz(4)]);
@@ -128,20 +129,20 @@ axis image
 magnifyOnFigure;
 
 disp('Press a key...')
-pause;
+pause
 close all
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Properties (in interactive mode)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-close all;
+close all
 disp( sprintf('Using multiple magnifiers on the same axis...') ) 
 figHandler = figure;
-hold on;
+hold on
 plot(rand(100,1), 'b'); plot(rand(300, 1), 'r'); 
-grid on;
-hold off; 
+grid on
+hold off 
 ylim([0 2]);
 
 magnifyOnFigure(...
@@ -182,6 +183,31 @@ magnifyOnFigure(...
         'edgeColor', 'black',...
         'secondaryAxesFaceColor', [0.91 0.91 0.91]... 
             ); 
+
         
-     
-        
+
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Log graph
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+close all
+disp( sprintf('''magnifyOnFigure'' in a logarithm X graph plot') ) 
+fig = figure;
+plot(rand(100,1), 'b')
+grid on
+set(gca, 'XScale', 'log')
+magnifyOnFigure;
+disp('Press a key...')
+pause
+
+close all
+disp( sprintf('''magnifyOnFigure'' in a logarithm Y graph plot') ) 
+fig = figure;
+plot(rand(100,1), 'b')
+grid on
+set(gca, 'YScale', 'log')
+magnifyOnFigure;
+disp('Press a key...')
+pause

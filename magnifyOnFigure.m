@@ -1,38 +1,33 @@
+function varargout = magnifyOnFigure( varargin )
 % NAME: magnifyOnFigure
 % 
 % AUTHOR: David Fernandez Prim (david.fernandez.prim@gmail.com)
+% https://www.mathworks.com/matlabcentral/fileexchange/26007-on-figure-magnifier?s_tid=srchtitle
 %
 % PURPOSE: Shows a functional zoom tool, suitable for publishing of zoomed
 % images and 2D plots
 % 
-% INPUT ARGUMENTS:
-%                   figureHandle [double 1x1]: graphic handle of the target figure
+% INPUT ARGUMENTS:  figureHandle [double 1x1]: graphic handle of the target figure
 %                   axesHandle [double 1x1]: graphic handle of the target axes.
 %
-% OUTPUT ARGUMENTS: 
-%                   none
+% OUTPUT ARGUMENTS: none
 %                   
 % SINTAX:
 %           1)  magnifyOnFigure;
-%               $ Adds magnifier on the first axes of the current figure, with
-%               default behavior.
-%
+%               $ Adds magnifier on the last (current) axes of the current
+%               figure, with default behavior.
 %           2)  magnifyOnFigure( figureHandle );
 %               $ Adds magnifier on the first axes of the figure with handle
 %               'figureHandle', with default behavior. 
-%
 %           3)  magnifyOnFigure( figureHandle, 'property1', value1,... );
 %               $ Adds magnifier on the first axes of the figure with handle
 %               'figureHandle', with modified behavior. 
-%
 %           4)  magnifyOnFigure( axesHandle );
 %               $ Adds magnifier on the axes with handle 'axesHandle', with
 %               default behavior. 
-%
 %           5)  magnifyOnFigure( axesHandle, 'property1', value1,... );
 %               $ Adds magnifier on the axes with handle 'axesHandle', with
 %               modified behavior. 
-%
 %           6)  Consecutive calls to this function (in any of the syntaxes
 %               exposed above) produce multiple selectable magnifiers on the target axes.
 %
@@ -137,30 +132,10 @@
 %   1.15        |   07/01/2010  |   D. Fernandez    |   Solved bug when resizing window
 %   1.16        |   07/01/2010  |   D. Fernandez    |   Improved documentation
 %   1.17        |   28/03/2010  |   D. Fernandez    |   Added tool identifications feature
-%
-
-function magnifyOnFigure( varargin )
+%   1.18        |   19/10/2017  | H. Guillardi Jr.  |   Accept subplot (use last select axis), using `gca`. Works in olders Matlab versions.
 
 clear global appDataStruct
 global appDataStruct
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%CHECK OUTPUT ARGUMENTS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-switch nargout
-    
-    case 0
-        %Correct
-        outputObjectExpected = false;
-        
-    case 1
-        %tool object expected at the output
-        outputObjectExpected = false;
-        
-    otherwise
-        error('Number of output arguments not supported.');
-end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %CHECK INPUT ARGUMENTS
@@ -171,7 +146,8 @@ if nargin == 0
     %Set figure handle
     appDataStruct.figureHandle = gcf;
     % Get number of axes in the same figure
-    childHandle = get(appDataStruct.figureHandle, 'Children');
+%    childHandle = get(appDataStruct.figureHandle, 'Children');
+    childHandle = gca; %get(appDataStruct.figureHandle, 'Children')% Get the last active axis.
     iAxes = find(strcmpi(get(childHandle, 'Type'), 'axes'));
     % If no target axes specified, select the first found as mainAxes
     appDataStruct.mainAxesHandle = childHandle( iAxes(end) );
@@ -187,7 +163,8 @@ elseif nargin > 0
         %Set figure handle
         appDataStruct.figureHandle = varargin{1};
         % Get number of axes in the same figure
-        childHandle = get(appDataStruct.figureHandle, 'Children');
+%        childHandle = get(appDataStruct.figureHandle, 'Children');
+        childHandle = gca;
         iAxes = find(strcmpi(get(childHandle, 'Type'), 'axes'));
         % If no target axes specified, select the first found as mainAxes
         appDataStruct.mainAxesHandle = childHandle( iAxes(end) );
@@ -430,11 +407,13 @@ end
 appDataStruct.focusOnThisTool = true;
 
 %Compute unique ID of this magnifying tool, from handles of its elements
-toolId =    appDataStruct.figureHandle +...
-            appDataStruct.mainAxesHandle +...
-            appDataStruct.magnifierHandle +...
-            appDataStruct.linkHandle +...
-            appDataStruct.secondaryAxesHandle;
+if verLessThan('matlab','8.4')
+    toolId = appDataStruct.figureHandle + appDataStruct.mainAxesHandle +...
+        appDataStruct.magnifierHandle + appDataStruct.linkHandle +...
+        appDataStruct.secondaryAxesHandle;
+else
+    toolId = rand(1,1);
+end
 %Set ID of this magnifying tool        
 appDataStruct.toolId = toolId;
 
@@ -468,7 +447,7 @@ set(appDataStruct.figureHandle, 'Interruptible', 'off');
 set(appDataStruct.figureHandle, 'BusyAction', 'cancel');
 
 %Return created object if requested
-if outputObjectExpected == true
+if nargout==1
     varargout{1} = appDataStruct;
 end
     
@@ -514,41 +493,52 @@ else
     %Get main axes limits, in axes units
     mainAxesXLim = get( appDataStruct.mainAxesHandle, 'XLim' );
     mainAxesYLim = get( appDataStruct.mainAxesHandle, 'YLim' );
-    mainAxesXDir = get( appDataStruct.mainAxesHandle, 'XDir' );
-    mainAxesYDir = get( appDataStruct.mainAxesHandle, 'YDir' );
-    
     %Get position and size of main axes in pixels
     mainAxesPositionInPixels = getMainAxesPositionInPixels();
-    
-    %Compute Pixels-to-axes units conversion factors
-    xMainAxisPixels2UnitsFactor = determineSpan( mainAxesXLim(1), mainAxesXLim(2) )/mainAxesPositionInPixels(3);
-    yMainAxisPixels2UnitsFactor = determineSpan( mainAxesYLim(1), mainAxesYLim(2) )/mainAxesPositionInPixels(4);
-
     %Get position and extend of magnifier, in pixels                      
-    magnifierPosition = getMagnifierPositionInPixels(); %In pixels
+    magnifierPosition = getMagnifierPositionInPixels();
     
-    %Relative to the lower-left corner of the axes
-    magnifierPosition(1) = magnifierPosition(1) - mainAxesPositionInPixels(1);
+    % Reflect it to log scale.
+    switch get( appDataStruct.mainAxesHandle, 'XScale' )
+        case 'linear'
+            % The usual.
+        case 'log'
+            %%#TODO the error of Bode plot is here
+        otherwise
+            error('Not recognized X axis scale.')
+    end
+    
+    switch get( appDataStruct.mainAxesHandle, 'YScale' )
+        case 'linear'
+            % The usual.
+        case 'log'
+            %%#TODO the error of Bode plot is here
+        otherwise
+            error('Not recognized X axis scale.')
+    end
+    
+    xMainAxisPixels2UnitsFactor = determineSpan( mainAxesXLim(1), mainAxesXLim(2) )/mainAxesPositionInPixels(3); %Compute Pixels-to-axes units conversion factors
+    magnifierPosition(1) = magnifierPosition(1) - mainAxesPositionInPixels(1); %Relative to the lower-left corner of the axes
+    magnifierPosition(3) = magnifierPosition(3) * xMainAxisPixels2UnitsFactor; %Compute position and exted of magnifier, in axes units
+    switch get( appDataStruct.mainAxesHandle, 'XDir' )
+        case 'normal'
+            magnifierPosition(1) = mainAxesXLim(1) + magnifierPosition(1)*xMainAxisPixels2UnitsFactor;
+        case 'reverse'
+            magnifierPosition(1) = mainAxesXLim(2) - magnifierPosition(1)*xMainAxisPixels2UnitsFactor - magnifierPosition(3);
+        otherwise
+            error('Not recognized X axis direction.')
+    end
+    
+    yMainAxisPixels2UnitsFactor = determineSpan( mainAxesYLim(1), mainAxesYLim(2) )/mainAxesPositionInPixels(4);
     magnifierPosition(2) = magnifierPosition(2) - mainAxesPositionInPixels(2);
-    
-    %Compute position and exted of magnifier, in axes units
-    magnifierPosition(3) = magnifierPosition(3) * xMainAxisPixels2UnitsFactor;
     magnifierPosition(4) = magnifierPosition(4) * yMainAxisPixels2UnitsFactor;
-    if strcmpi(mainAxesXDir, 'normal') && strcmpi(mainAxesYDir, 'normal')
-        magnifierPosition(1) = mainAxesXLim(1) + magnifierPosition(1)*xMainAxisPixels2UnitsFactor;
-        magnifierPosition(2) = mainAxesYLim(1) + magnifierPosition(2)*yMainAxisPixels2UnitsFactor;
-    end
-    if strcmpi(mainAxesXDir, 'normal') && strcmpi(mainAxesYDir, 'reverse')
-        magnifierPosition(1) = mainAxesXLim(1) + magnifierPosition(1)*xMainAxisPixels2UnitsFactor;
-        magnifierPosition(2) = mainAxesYLim(2) - magnifierPosition(2)*yMainAxisPixels2UnitsFactor - magnifierPosition(4);   
-    end
-    if strcmpi(mainAxesXDir, 'reverse') && strcmpi(mainAxesYDir, 'normal')
-        magnifierPosition(1) = mainAxesXLim(2) - magnifierPosition(1)*xMainAxisPixels2UnitsFactor - magnifierPosition(3);
-        magnifierPosition(2) = mainAxesYLim(1) + magnifierPosition(2)*yMainAxisPixels2UnitsFactor; 
-    end
-    if strcmpi(mainAxesXDir, 'reverse') && strcmpi(mainAxesYDir, 'reverse')
-        magnifierPosition(1) = mainAxesXLim(2) - magnifierPosition(1)*xMainAxisPixels2UnitsFactor - magnifierPosition(3);
-        magnifierPosition(2) = mainAxesYLim(2) - magnifierPosition(2)*yMainAxisPixels2UnitsFactor - magnifierPosition(4);
+    switch get( appDataStruct.mainAxesHandle, 'YDir' )
+        case 'normal'
+            magnifierPosition(2) = mainAxesYLim(1) + magnifierPosition(2)*yMainAxisPixels2UnitsFactor;
+        case 'reverse'
+            magnifierPosition(2) = mainAxesYLim(2) - magnifierPosition(2)*yMainAxisPixels2UnitsFactor - magnifierPosition(4);
+        otherwise
+            error('Not recognized Y axis direction.')
     end
         
     secondaryAxisXlim = [magnifierPosition(1) magnifierPosition(1)+magnifierPosition(3)];
@@ -603,19 +593,7 @@ end
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function span = determineSpan( v1, v2 )
-
-if v1>=0 && v2>=0
-    span = max(v1,v2) - min(v1,v2);
-end
-if v1>=0 && v2<0
-    span = v1 - v2;
-end
-if v1<0 && v2>=0
-    span = -v1 + v2;
-end
-if v1<0 && v2<0
-    span = max(-v1,-v2) - min(-v1,-v2);
-end
+span = abs(v2 - v1);
    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -993,17 +971,17 @@ switch(currentCaracter)
         %Debug info
         if strcmp(currentModifier, 'control')
             magnifierPosition = getMagnifierPositionInPixels();
-            disp(sprintf('Magnifier position: [%g %g %g %g];', magnifierPosition(1), magnifierPosition(2), magnifierPosition(3), magnifierPosition(4)  ));
-            secondaryAxesPosition = getSecondaryAxesPositionInPixels();            
-            disp(sprintf('Secondary axes position: [%g %g %g %g];', secondaryAxesPosition(1), secondaryAxesPosition(2), secondaryAxesPosition(3), secondaryAxesPosition(4)  ));            
+            fprintf('Magnifier position: [%g %g %g %g];\n', magnifierPosition(1), magnifierPosition(2), magnifierPosition(3), magnifierPosition(4)  );
+            secondaryAxesPosition = getSecondaryAxesPositionInPixels();
+            fprintf('Secondary axes position: [%g %g %g %g];\n', secondaryAxesPosition(1), secondaryAxesPosition(2), secondaryAxesPosition(3), secondaryAxesPosition(4)  );
         end
-
+        
     case {'q'} % 'q'
         %additional xooming factors reseted
         if strcmp(currentModifier, 'control')
             appDataStruct.secondaryAxesAdditionalZoomingFactor = [0 0];
         end
-          
+        
     case {'i'} % 'i'
         %display/hide on-screen tool identifier 
         if strcmp(currentModifier, 'control')
