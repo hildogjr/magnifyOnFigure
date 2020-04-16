@@ -96,7 +96,7 @@ HOT KEYS (active if 'mode' set to 'interactive')
 
 'Shift+PageDown': Decrease additional zooming factor on Y-axis
 
-'Control+Q': Resets the additional zooming factors to 0
+'Shift+Q': Resets the additional zooming factors to 0
 
 'Control+A': Displays position of secondary axes and magnifier in the command window
 

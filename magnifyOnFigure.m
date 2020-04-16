@@ -3,6 +3,8 @@ function varargout = magnifyOnFigure( varargin )
 % 
 % AUTHOR: David Fernandez Prim (david.fernandez.prim@gmail.com)
 % https://www.mathworks.com/matlabcentral/fileexchange/26007-on-figure-magnifier?s_tid=srchtitle
+% REVISER: Hildo Guillardi Júnior
+% https://github.com/hildogjr/magnifyOnFigure/
 %
 % PURPOSE: Shows a functional zoom tool, suitable for publishing of zoomed
 % images and 2D plots
@@ -82,11 +84,11 @@ function varargout = magnifyOnFigure( varargin )
 %       'Alt+down arrow':       Compress secondary axes 10% on the Y-axis
 %       'Alt+left arrow':       Compress secondary axes 10% on the X-axis
 %       'Alt+right arrow':      Expands secondary axes 10% on the X-axis
-%       'PageUp':               Increase additional zooming factor on X-axis
-%       'PageDown':             Decrease additional zooming factor on X-axis
-%       'Shift+PageUp':         Increase additional zooming factor on Y-axis
-%       'Shift+PageDown':       Decrease additional zooming factor on Y-axis
-%       'Control+Q':            Resets the additional zooming factors to 0
+%       'PageUp':               Increase zooming factor on X-axis
+%       'PageDown':             Decrease zooming factor on X-axis
+%       'Shift+PageUp':         Increase zooming factor on Y-axis
+%       'Shift+PageDown':       Decrease zooming factor on Y-axis
+%       'Shift+Q':            Resets the zooming factors to 1
 %       'Control+A':            Displays position of secondary axes and
 %                               magnifier in the command window
 %       'Control+D':            Deletes the focused tool
@@ -544,18 +546,13 @@ else
     secondaryAxisXlim = [magnifierPosition(1) magnifierPosition(1)+magnifierPosition(3)];
     secondaryAxisYlim = [magnifierPosition(2) magnifierPosition(2)+magnifierPosition(4)]; 
     
-    zoomFactor = appDataStruct.secondaryAxesAdditionalZoomingFactor;
-    xZoom = zoomFactor(1);
-    yZoom = zoomFactor(2);
-
-    aux_secondaryAxisXlim(1) =  mean(secondaryAxisXlim) -...
-                            determineSpan( secondaryAxisXlim(1), mean(secondaryAxisXlim) )*(1-xZoom);
-    aux_secondaryAxisXlim(2) =  mean(secondaryAxisXlim) +...
-                            determineSpan( secondaryAxisXlim(2), mean(secondaryAxisXlim) )*(1-xZoom);
-    aux_secondaryAxisYlim(1) =  mean(secondaryAxisYlim) -...
-                            determineSpan( secondaryAxisYlim(1), mean(secondaryAxisYlim) )*(1-yZoom);
-    aux_secondaryAxisYlim(2) =  mean(secondaryAxisYlim) +...
-                            determineSpan( secondaryAxisYlim(2), mean(secondaryAxisYlim) )*(1-yZoom);
+    % Apply the zoom factor to the secondary axis using the center and middle as anchor
+    aux_secondaryAxisXlim =  mean(secondaryAxisXlim) + [-1, +1] * ...
+                            determineSpan( secondaryAxisXlim(1), mean(secondaryAxisXlim) )* ...
+                            appDataStruct.secondaryAxesZoomingFactor(1);
+    aux_secondaryAxisYlim =  mean(secondaryAxisYlim) + [-1, +1] *...
+                            determineSpan( secondaryAxisYlim(1), mean(secondaryAxisYlim) )* ...
+                            appDataStruct.secondaryAxesZoomingFactor(2);
 
     if aux_secondaryAxisXlim(1)<aux_secondaryAxisXlim(2) &&...
        all(isfinite(aux_secondaryAxisXlim))     
@@ -977,9 +974,9 @@ switch(currentCaracter)
         end
         
     case {'q'} % 'q'
-        %additional xooming factors reseted
-        if strcmp(currentModifier, 'control')
-            appDataStruct.secondaryAxesAdditionalZoomingFactor = [0 0];
+        %additional zooming factors reseted
+        if strcmp(currentModifier, 'shift')
+            appDataStruct.secondaryAxesZoomingFactor = [1 1];
         end
         
     case {'i'} % 'i'
@@ -988,52 +985,42 @@ switch(currentCaracter)
             toolArray = get( src, 'UserData' );
             nTools = length(toolArray);                                                              
             for iTool = 1:nTools
-                
                 toolArray(iTool) = updateToolId( toolArray(iTool), iTool, 'toggle' );
-                
             end
             set( src, 'UserData', toolArray );
-            
         end
         
     case {'pageup'} % '+'
-        zoomFactor = appDataStruct.secondaryAxesAdditionalZoomingFactor;
-        
         %Increase additional zooming factor on X-axis
         if isempty(currentModifier)
-            zoomFactor(1) = zoomFactor(1) + 0.1;
+            appDataStruct.secondaryAxesZoomingFactor(1) = appDataStruct.secondaryAxesZoomingFactor(1) - 0.1;
             if strcmpi( appDataStruct.globalZoomMode, 'on')
-                zoomFactor(2) = zoomFactor(2) + 0.1;
+                appDataStruct.secondaryAxesZoomingFactor(2) = appDataStruct.secondaryAxesZoomingFactor(2) - 0.1;
             end
-            appDataStruct.secondaryAxesAdditionalZoomingFactor = zoomFactor;
         end
         %Increase additional zooming factor on Y-axis        
         if strcmp(currentModifier, 'shift')
-            zoomFactor(2) = zoomFactor(2) + 0.1;
+            appDataStruct.secondaryAxesZoomingFactor(2) = appDataStruct.secondaryAxesZoomingFactor(2) - 0.1;
             if strcmpi( appDataStruct.globalZoomMode, 'on')
-                zoomFactor(1) = zoomFactor(1) + 0.1;
+                appDataStruct.secondaryAxesZoomingFactor(1) = ...
+                    appDataStruct.secondaryAxesZoomingFactor(1) - 0.1;
             end
-            appDataStruct.secondaryAxesAdditionalZoomingFactor = zoomFactor;
         end
         
     case {'pagedown'} % '-'
-        zoomFactor = appDataStruct.secondaryAxesAdditionalZoomingFactor;
-        
         %Redude additional zooming factor on X-axis
         if isempty(currentModifier)
-            zoomFactor(1) = zoomFactor(1) - 0.1;
+            appDataStruct.secondaryAxesZoomingFactor(1) = appDataStruct.secondaryAxesZoomingFactor(1) + 0.1;
             if strcmpi( appDataStruct.globalZoomMode, 'on')
-                zoomFactor(2) = zoomFactor(2) - 0.1;
+                appDataStruct.secondaryAxesZoomingFactor(2) = appDataStruct.secondaryAxesZoomingFactor(2) + 0.1;
             end
-            appDataStruct.secondaryAxesAdditionalZoomingFactor = zoomFactor;
         end
         %Redude additional zooming factor on Y-axis        
         if strcmp(currentModifier, 'shift')
-            zoomFactor(2) = zoomFactor(2) - 0.1;
+            appDataStruct.secondaryAxesZoomingFactor(2) = appDataStruct.secondaryAxesZoomingFactor(2) + 0.1;
             if strcmpi( appDataStruct.globalZoomMode, 'on')
-                zoomFactor(1) = zoomFactor(1) - 0.1;
+                appDataStruct.secondaryAxesZoomingFactor(1) = appDataStruct.secondaryAxesZoomingFactor(1) + 0.1;
             end
-            appDataStruct.secondaryAxesAdditionalZoomingFactor = zoomFactor;
         end        
         
     otherwise
@@ -2196,7 +2183,7 @@ function obj = initializeToolStruct(varargin)
         obj.secondaryAxesPosition = [];
         obj.secondaryAxesXLim = [];
         obj.secondaryAxesYLim = [];
-        obj.secondaryAxesAdditionalZoomingFactor = [0 0];
+        obj.secondaryAxesZoomingFactor = [1 1];
 
         %global
         obj.globalUnits = 'pixels';
@@ -2220,7 +2207,7 @@ function obj = initializeToolStruct(varargin)
             'mainAxesHandle', 'magnifierHandle', 'magnifierPosition', ...
             'magnifierShape', 'linkHandle', 'linkDisplayStyle', 'secondaryAxesHandle',...
             'secondaryAxesFaceColor', 'secondaryAxesPosition', 'secondaryAxesXLim',...
-            'secondaryAxesYLim', 'secondaryAxesAdditionalZoomingFactor', ...
+            'secondaryAxesYLim', 'secondaryAxesZoomingFactor', ...
             'globalUnits', 'globalMode', 'globalEdgeWidth', 'globalEdgeColor',...
             'globalZoomMode', 'pointerArea', 'ButtonDown', 'pointerPositionOnButtonDown'}))
             
