@@ -604,7 +604,7 @@ span = abs(v2 - v1);
 %                   
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function ResizeCallback(src,eventdata)
+function ResizeCallback(src, ~)
 
 global appDataStruct;
 
@@ -635,7 +635,6 @@ for i=1:nTools
     
     %Set position of secondaryAxes (automatically modified)
     toolArray(i).secondaryAxesPosition = getSecondaryAxesPositionInPixels();
-    
        
     toolArray(i).magnifierPosition(1) = toolArray(i).magnifierPosition(1) * newFigurePosition(3)/oldFigurePosition(3);
     toolArray(i).magnifierPosition(2) = toolArray(i).magnifierPosition(2) * newFigurePosition(4)/oldFigurePosition(4);
@@ -967,16 +966,16 @@ switch(currentCaracter)
     case {'a'} % 'a'
         %Debug info
         if strcmp(currentModifier, 'control')
-            magnifierPosition = getMagnifierPositionInPixels();
-            fprintf('Magnifier position: [%g %g %g %g];\n', magnifierPosition(1), magnifierPosition(2), magnifierPosition(3), magnifierPosition(4)  );
-            secondaryAxesPosition = getSecondaryAxesPositionInPixels();
-            fprintf('Secondary axes position: [%g %g %g %g];\n', secondaryAxesPosition(1), secondaryAxesPosition(2), secondaryAxesPosition(3), secondaryAxesPosition(4)  );
+            fprintf('magnifyOnFigure position and values\n')
+            fprintf('Magnifier position: [%g %g %g %g];\n', getMagnifierPositionInPixels() );
+            fprintf('Secondary axes position: [%g %g %g %g];\n', getSecondaryAxesPositionInPixels() );
+            fprintf('Zoom factor: [%g %g];\n', appDataStruct.secondaryAxesZoomingFactor)
         end
         
     case {'q'} % 'q'
         %additional zooming factors reseted
         if strcmp(currentModifier, 'shift')
-            appDataStruct.secondaryAxesZoomingFactor = [1 1];
+            appDataStruct.secondaryAxesZoomingFactor = [1, 1];
         end
         
     case {'i'} % 'i'
@@ -1053,7 +1052,7 @@ refreshMagnifierToSecondaryAxesLink();
 %                   
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function ButtonMotionCallback(src,eventdata)
+function ButtonMotionCallback(src, ~)
 
 global appDataStruct
 
@@ -1151,7 +1150,7 @@ refreshMagnifierToSecondaryAxesLink();
 %                   
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function ButtonDownCallback(src,eventdata)
+function ButtonDownCallback(src, ~)
 
 global appDataStruct  
 
@@ -1250,7 +1249,7 @@ set(src, 'userdata', toolArray);
 %                   
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function DeleteCallback(src,eventdata)
+function DeleteCallback(src, ~)
 
 global appDataStruct;
 
@@ -1514,7 +1513,7 @@ global appDataStruct
 
 if isempty(appDataStruct)     
     return; 
-end;
+end
 
 defaultUnits = get(appDataStruct.magnifierHandle, 'Units');
 set(appDataStruct.magnifierHandle, 'Units', 'pixels');
@@ -1746,16 +1745,16 @@ if strcmpi( linkStyle, 'straight')
     %Minimize distance between hot spots
     L1 = size(magnifierHotPoints, 1);
     L2 = size(secondaryAxesHotPoints, 1);
-    [iMagnifierHotPoints iSecondaryAxesHotPoints] = meshgrid(1:L1, 1:L2);
-    D2  =   ( magnifierHotPoints(iMagnifierHotPoints(:),1) - secondaryAxesHotPoints(iSecondaryAxesHotPoints(:),1) ).^2 + ...
-            ( magnifierHotPoints(iMagnifierHotPoints(:),2) - secondaryAxesHotPoints(iSecondaryAxesHotPoints(:),2) ).^2;
+    [iMagnifierHotPoints, iSecondaryAxesHotPoints] = meshgrid(1:L1, 1:L2);
+    D2  =   ( magnifierHotPoints(iMagnifierHotPoints(:),1) - secondaryAxesHotPoints(iSecondaryAxesHotPoints(:), 1) ).^2 + ...
+            ( magnifierHotPoints(iMagnifierHotPoints(:),2) - secondaryAxesHotPoints(iSecondaryAxesHotPoints(:), 2) ).^2;
 
-    [C,I] = sort( D2, 'ascend' );
+    [~, I] = sort( D2, 'ascend' );
 
-    X(1) = magnifierHotPoints(iMagnifierHotPoints(I(1)),1);
-    Y(1) = magnifierHotPoints(iMagnifierHotPoints(I(1)),2);
-    X(2) = secondaryAxesHotPoints(iSecondaryAxesHotPoints(I(1)),1);
-    Y(2) = secondaryAxesHotPoints(iSecondaryAxesHotPoints(I(1)),2);
+    X(1) = magnifierHotPoints(iMagnifierHotPoints(I(1)), 1);
+    Y(1) = magnifierHotPoints(iMagnifierHotPoints(I(1)), 2);
+    X(2) = secondaryAxesHotPoints(iSecondaryAxesHotPoints(I(1)), 1);
+    Y(2) = secondaryAxesHotPoints(iSecondaryAxesHotPoints(I(1)), 2);
     
     %Plot/update line
     if isempty(appDataStruct.linkHandle)
@@ -1937,11 +1936,11 @@ if strcmpi( linkStyle, 'elbow')
     %Minimize distance between hot spots
     L1 = size(magnifierHotPoints, 1);
     L2 = size(secondaryAxesHotPoints, 1);
-    [iMagnifierHotPoints iSecondaryAxesHotPoints] = meshgrid(1:L1, 1:L2);
+    [iMagnifierHotPoints, iSecondaryAxesHotPoints] = meshgrid(1:L1, 1:L2);
     D2  =   ( magnifierHotPoints(iMagnifierHotPoints(:),1) - secondaryAxesHotPoints(iSecondaryAxesHotPoints(:),1) ).^2 + ...
             ( magnifierHotPoints(iMagnifierHotPoints(:),2) - secondaryAxesHotPoints(iSecondaryAxesHotPoints(:),2) ).^2;
 
-    [C,I] = sort( D2, 'ascend' );
+    [~, I] = sort( D2, 'ascend' );
 
     X(1) = magnifierHotPoints(iMagnifierHotPoints(I(1)),1);
     Y(1) = magnifierHotPoints(iMagnifierHotPoints(I(1)),2);
@@ -2046,12 +2045,12 @@ global appDataStruct
 
 if isempty(appDataStruct)     
     return; 
-end;
+end
 
-% If image, defualt aspect ratio of magnifier and secondary axes to [1 1]
+% If image, defualt aspect ratio of magnifier and secondary axes to [1, 1]
 childHandle = get(appDataStruct.mainAxesHandle, 'Children');
-plotFlag = ~isempty( find(strcmpi(get(childHandle, 'Type'), 'line'),1) );
-imageFlag = ~isempty( find(strcmpi(get(childHandle, 'Type'), 'image'),1) );
+plotFlag = ~isempty( find(strcmpi(get(childHandle, 'Type'), 'line'), 1) );
+imageFlag = ~isempty( find(strcmpi(get(childHandle, 'Type'), 'image'), 1) );
 
 %Get position and size of main Axis (left & bottom relative to figure frame)
 mainAxesPosition = getMainAxesPositionInPixels();
@@ -2101,12 +2100,12 @@ global appDataStruct
 
 if isempty(appDataStruct)     
     return; 
-end;
+end
 
-% If image, defualt aspect ratio of magnifier and secondary axes to [1 1]
+% If image, defualt aspect ratio of magnifier and secondary axes to [1, 1]
 childHandle = get(appDataStruct.mainAxesHandle, 'Children');
-plotFlag = ~isempty( find(strcmpi(get(childHandle, 'Type'), 'line'),1) );
-imageFlag = ~isempty( find(strcmpi(get(childHandle, 'Type'), 'image'),1) );
+plotFlag = ~isempty( find(strcmpi(get(childHandle, 'Type'), 'line'), 1) );
+imageFlag = ~isempty( find(strcmpi(get(childHandle, 'Type'), 'image'), 1) );
 
 %Set initial position and size of magnifying rectangle
 mainAxisXLim = get( appDataStruct.mainAxesHandle, 'XLim' );
@@ -2183,7 +2182,7 @@ function obj = initializeToolStruct(varargin)
         obj.secondaryAxesPosition = [];
         obj.secondaryAxesXLim = [];
         obj.secondaryAxesYLim = [];
-        obj.secondaryAxesZoomingFactor = [1 1];
+        obj.secondaryAxesZoomingFactor = [1, 1];
 
         %global
         obj.globalUnits = 'pixels';
