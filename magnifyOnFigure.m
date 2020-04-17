@@ -476,18 +476,11 @@ end
 
 %If limits specified
 if ~(isempty(appDataStruct.secondaryAxesXLim) ||...
-   isempty(appDataStruct.secondaryAxesYLim))     
+   isempty(appDataStruct.secondaryAxesYLim))
 
-    initialXLim = appDataStruct.secondaryAxesXLim;
-    initialYLim = appDataStruct.secondaryAxesYLim;
-    
-    limitsToSet = [...
-                        initialXLim(1)...
-                        initialXLim(2)...
-                        initialYLim(1)...
-                        initialYLim(2)...
-                    ];        
-    axis(appDataStruct.secondaryAxesHandle, limitsToSet);
+    axis(appDataStruct.secondaryAxesHandle, ...
+        [appDataStruct.secondaryAxesXLim, ...
+        appDataStruct.secondaryAxesYLim]);
     
     appDataStruct.secondaryAxesXLim = [];
     appDataStruct.secondaryAxesYLim = [];
@@ -696,19 +689,12 @@ switch(currentCaracter)
     case {'leftarrow'} % left arrow
         %Move magnifier to the left
         if isempty(currentModifier)
-            
-            position = getMagnifierPositionInPixels();
-            magnifierPosition(1) = position(1)-1;
-            magnifierPosition(2) = position(2);
-            magnifierPosition(3) = position(3);
-            magnifierPosition(4) = position(4);
-            setMagnifierPositionInPixels( magnifierPosition );  
+            setMagnifierPositionInPixels( getMagnifierPositionInPixels() - [1, 0, 0, 0] );  
             
             toolArray = get( src, 'UserData' );
             focusedTool = find([toolArray.focusOnThisTool] == 1);                                                          
             toolArray(focusedTool) = updateToolId( toolArray(focusedTool), focusedTool, 'noToggle' );
             set( src, 'UserData', toolArray );
-            
         end
         %Compress magnifier on the X axis
         if strcmp(currentModifier, 'shift')
@@ -726,12 +712,7 @@ switch(currentCaracter)
         end
         %Move secondary axes to the left        
         if strcmp(currentModifier, 'control')
-            position = getSecondaryAxesPositionInPixels();
-            secondaryAxesPosition(1) = position(1)-1;
-            secondaryAxesPosition(2) = position(2);
-            secondaryAxesPosition(3) = position(3);
-            secondaryAxesPosition(4) = position(4);
-            setSecondaryAxesPositionInPixels( secondaryAxesPosition );        
+            setSecondaryAxesPositionInPixels( getSecondaryAxesPositionInPixels() - [1, 0, 0, 0] );        
         end
         %Compress secondary axes on the X axis        
         if strcmp(currentModifier, 'alt')
@@ -751,12 +732,7 @@ switch(currentCaracter)
     case {'rightarrow'} % right arrow
          %Move magnifier to the right
         if isempty(currentModifier)
-            position = getMagnifierPositionInPixels();
-            magnifierPosition(1) = position(1)+1;
-            magnifierPosition(2) = position(2);
-            magnifierPosition(3) = position(3);
-            magnifierPosition(4) = position(4);
-            setMagnifierPositionInPixels( magnifierPosition ); 
+            setMagnifierPositionInPixels( getMagnifierPositionInPixels() + [1, 0, 0, 0] ); 
             
             toolArray = get( src, 'UserData' );
             focusedTool = find([toolArray.focusOnThisTool] == 1);                                                          
@@ -780,12 +756,7 @@ switch(currentCaracter)
         end
         %Move secondary axes to the right        
         if strcmp(currentModifier, 'control')
-            position = getSecondaryAxesPositionInPixels();
-            secondaryAxesPosition(1) = position(1)+1;
-            secondaryAxesPosition(2) = position(2);
-            secondaryAxesPosition(3) = position(3);
-            secondaryAxesPosition(4) = position(4);
-            setSecondaryAxesPositionInPixels( secondaryAxesPosition );      
+            setSecondaryAxesPositionInPixels( getSecondaryAxesPositionInPixels() + [1, 0, 0, 0] );      
         end   
         %Expand secondary axes on the X axis        
         if strcmp(currentModifier, 'alt')
@@ -805,12 +776,7 @@ switch(currentCaracter)
     case {'uparrow'} % up arrow
         %Move magnifier to the top
         if isempty(currentModifier)
-            position = getMagnifierPositionInPixels();
-            magnifierPosition(1) = position(1);
-            magnifierPosition(2) = position(2)+1;
-            magnifierPosition(3) = position(3);
-            magnifierPosition(4) = position(4);
-            setMagnifierPositionInPixels( magnifierPosition );   
+            setMagnifierPositionInPixels( getMagnifierPositionInPixels() + [0, 1, 0, 0] );   
             
             toolArray = get( src, 'UserData' );
             focusedTool = find([toolArray.focusOnThisTool] == 1);                                                          
@@ -834,12 +800,7 @@ switch(currentCaracter)
         end
         %Move secondary axes to the top        
         if strcmp(currentModifier, 'control')
-            position = getSecondaryAxesPositionInPixels();
-            secondaryAxesPosition(1) = position(1);
-            secondaryAxesPosition(2) = position(2)+1;
-            secondaryAxesPosition(3) = position(3);
-            secondaryAxesPosition(4) = position(4);
-            setSecondaryAxesPositionInPixels( secondaryAxesPosition );                  
+            setSecondaryAxesPositionInPixels( getSecondaryAxesPositionInPixels() + [0, 1, 0, 0] );                  
         end 
         %Expand secondary axes on the Y axis        
         if strcmp(currentModifier, 'alt')
@@ -859,12 +820,7 @@ switch(currentCaracter)
     case {'downarrow'} % down arrow
         %Move magnifier to the bottom
         if isempty(currentModifier)
-            position = getMagnifierPositionInPixels();
-            magnifierPosition(1) = position(1);
-            magnifierPosition(2) = position(2)-1;
-            magnifierPosition(3) = position(3);
-            magnifierPosition(4) = position(4);
-            setMagnifierPositionInPixels( magnifierPosition );      
+            setMagnifierPositionInPixels( getMagnifierPositionInPixels() - [0, 1, 0, 0] );      
             
             toolArray = get( src, 'UserData' );
             focusedTool = find([toolArray.focusOnThisTool] == 1);                                                          
@@ -888,12 +844,7 @@ switch(currentCaracter)
         end
         %Move secondary axes to the bottom        
         if strcmp(currentModifier, 'control')
-            position = getSecondaryAxesPositionInPixels();
-            secondaryAxesPosition(1) = position(1);
-            secondaryAxesPosition(2) = position(2)-1;
-            secondaryAxesPosition(3) = position(3);
-            secondaryAxesPosition(4) = position(4);
-            setSecondaryAxesPositionInPixels( secondaryAxesPosition );         
+            setSecondaryAxesPositionInPixels( getSecondaryAxesPositionInPixels() - [0, 1, 0, 0] );         
         end 
         %Compress secondary axes on the Y axis        
         if strcmp(currentModifier, 'alt')
