@@ -684,7 +684,7 @@ switch(currentCaracter)
             
             toolArray = get( src, 'UserData' );
             focusedTool = find([toolArray.focusOnThisTool] == 1);                                                          
-            toolArray(focusedTool) = updateToolId( toolArray(focusedTool), focusedTool, 'noToggle' );
+            toolArray(focusedTool) = updateToolId( toolArray, focusedTool, 'noToggle' );
             set( src, 'UserData', toolArray );
         end
         %Compress magnifier on the X axis
@@ -727,7 +727,7 @@ switch(currentCaracter)
             
             toolArray = get( src, 'UserData' );
             focusedTool = find([toolArray.focusOnThisTool] == 1);                                                          
-            toolArray(focusedTool) = updateToolId( toolArray(focusedTool), focusedTool, 'noToggle' );
+            toolArray(focusedTool) = updateToolId( toolArray, focusedTool, 'noToggle' );
             set( src, 'UserData', toolArray );
             
         end
@@ -771,7 +771,7 @@ switch(currentCaracter)
             
             toolArray = get( src, 'UserData' );
             focusedTool = find([toolArray.focusOnThisTool] == 1);                                                          
-            toolArray(focusedTool) = updateToolId( toolArray(focusedTool), focusedTool, 'noToggle' );
+            toolArray(focusedTool) = updateToolId( toolArray, focusedTool, 'noToggle' );
             set( src, 'UserData', toolArray );
             
         end
@@ -815,7 +815,7 @@ switch(currentCaracter)
             
             toolArray = get( src, 'UserData' );
             focusedTool = find([toolArray.focusOnThisTool] == 1);                                                          
-            toolArray(focusedTool) = updateToolId( toolArray(focusedTool), focusedTool, 'noToggle' );
+            toolArray(focusedTool) = updateToolId( toolArray, focusedTool, 'noToggle' );
             set( src, 'UserData', toolArray );
             
         end
@@ -924,9 +924,14 @@ switch(currentCaracter)
         %display/hide on-screen tool identifier 
         if strcmp(currentModifier, 'control')
             toolArray = get( src, 'UserData' );
-            nTools = length(toolArray);                                                              
-            for iTool = 1:nTools
-                toolArray(iTool) = updateToolId( toolArray(iTool), iTool, 'toggle' );
+            if any(arrayfun(@(a) ~isempty(a.toolIdHandle), toolArray))
+                command = 'hide';
+            else
+                command = 'show';
+            end
+            %command = 'toggle';
+            for iTool = 1:length(toolArray)
+                toolArray(iTool) = updateToolId( toolArray, iTool, command );
             end
             set( src, 'UserData', toolArray );
         end
@@ -1067,7 +1072,7 @@ switch appDataStruct.pointerArea
         
         toolArray = get( src, 'UserData' );
         focusedTool = find([toolArray.focusOnThisTool] == 1);                                                          
-        toolArray(focusedTool) = updateToolId( toolArray(focusedTool), focusedTool, 'noToggle' );
+        toolArray(focusedTool) = updateToolId( toolArray, focusedTool, 'noToggle' );
         set( src, 'UserData', toolArray );
                            
     otherwise
@@ -2115,40 +2120,53 @@ function obj = initializeToolStruct(varargin)
 %                   none
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%          
-function toolArrayOut = updateToolId( toolArrayIn, toolNum, modeStr )
-    
-toolArrayOut = toolArrayIn;
+function toolArray = updateToolId( toolArray, toolNum, modeStr )
 
-set(toolArrayOut.figureHandle, 'currentAxes', toolArrayOut.secondaryAxesHandle);
+toolArray = toolArray(toolNum);
+set(toolArray.figureHandle, 'currentAxes', toolArray.secondaryAxesHandle);
 
-if strcmp(modeStr, 'toggle')
-    if isempty(toolArrayOut.toolIdHandle)
-        xL = get(toolArrayOut.secondaryAxesHandle, 'XLim');
-        yL = get(toolArrayOut.secondaryAxesHandle, 'YLim');
-        toolArrayOut.toolIdHandle = text( (xL(2)+xL(1))/2, (yL(2)+yL(1))/2, num2str(toolNum));
-        set(toolArrayOut.toolIdHandle, 'FontSize', 30, 'FontWeight', 'bold' );
-        if toolArrayOut.focusOnThisTool
-            set(toolArrayOut.toolIdHandle,'BackgroundColor', 'red', 'Color', 'white');
+switch modeStr
+    case 'show'
+            xL = get(toolArray.secondaryAxesHandle, 'XLim');
+            yL = get(toolArray.secondaryAxesHandle, 'YLim');
+            toolArray.toolIdHandle = text( (xL(2)+xL(1))/2, (yL(2)+yL(1))/2, num2str(toolNum));
+            set(toolArray.toolIdHandle, 'FontSize', 30, 'FontWeight', 'bold' );
+            if toolArray.focusOnThisTool
+                set(toolArray.toolIdHandle,'BackgroundColor', 'red', 'Color', 'white');
+            else
+                set(toolArray.toolIdHandle,'BackgroundColor', 'black', 'Color', 'white');
+            end
+    case 'hide'
+            delete(toolArray.toolIdHandle);
+            toolArray.toolIdHandle = [];
+    case 'toggle'
+        if isempty(toolArray.toolIdHandle)
+            xL = get(toolArray.secondaryAxesHandle, 'XLim');
+            yL = get(toolArray.secondaryAxesHandle, 'YLim');
+            toolArray.toolIdHandle = text( (xL(2)+xL(1))/2, (yL(2)+yL(1))/2, num2str(toolNum));
+            set(toolArray.toolIdHandle, 'FontSize', 30, 'FontWeight', 'bold' );
+            if toolArray.focusOnThisTool
+                set(toolArray.toolIdHandle,'BackgroundColor', 'red', 'Color', 'white');
+            else
+                set(toolArray.toolIdHandle,'BackgroundColor', 'black', 'Color', 'white');
+            end
         else
-            set(toolArrayOut.toolIdHandle,'BackgroundColor', 'black', 'Color', 'white');
+            delete(toolArray.toolIdHandle);
+            toolArray.toolIdHandle = [];
         end
-    else
-        delete(toolArrayOut.toolIdHandle);
-        toolArrayOut.toolIdHandle = [];
-    end
-else
-    if not(isempty(toolArrayOut.toolIdHandle))        
-        xL = get(toolArrayOut.secondaryAxesHandle, 'XLim');
-        yL = get(toolArrayOut.secondaryAxesHandle, 'YLim');
-        set(toolArrayOut.toolIdHandle, 'Position', [(xL(2)+xL(1))/2, (yL(2)+yL(1))/2] );
-        if toolArrayOut.focusOnThisTool
-            set(toolArrayOut.toolIdHandle,'BackgroundColor', 'red', 'Color', 'white');
-        else
-            set(toolArrayOut.toolIdHandle,'BackgroundColor', 'black', 'Color', 'white');
+    otherwise
+        if not(isempty(toolArray.toolIdHandle))        
+            xL = get(toolArray.secondaryAxesHandle, 'XLim');
+            yL = get(toolArray.secondaryAxesHandle, 'YLim');
+            set(toolArray.toolIdHandle, 'Position', [(xL(2)+xL(1))/2, (yL(2)+yL(1))/2] );
+            if toolArray.focusOnThisTool
+                set(toolArray.toolIdHandle,'BackgroundColor', 'red', 'Color', 'white');
+            else
+                set(toolArray.toolIdHandle,'BackgroundColor', 'black', 'Color', 'white');
+            end
         end
-    end
 end
 
-set(toolArrayOut.figureHandle, 'currentAxes', toolArrayOut.mainAxesHandle);
+set(toolArray.figureHandle, 'currentAxes', toolArray.mainAxesHandle);
 
     
