@@ -899,7 +899,7 @@ switch(currentCaracter)
     case {'a'} % 'a'
         %Debug info
         if strcmp(currentModifier, 'control')
-            fprintf('magnifyOnFigure position and values\n')
+            fprintf('magnifyOnFigure active position and values\n')
             fprintf('Magnifier position: [%g %g %g %g];\n', getMagnifierPositionInPixels() );
             fprintf('Secondary axes position: [%g %g %g %g];\n', getSecondaryAxesPositionInPixels() );
             fprintf('Zoom factor: [%g %g];\n', appDataStruct.secondaryAxesZoomingFactor)
