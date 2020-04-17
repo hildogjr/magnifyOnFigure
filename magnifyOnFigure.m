@@ -468,11 +468,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function refreshSecondaryAxisLimits()
         
-global appDataStruct;
-
-if isempty(appDataStruct)
-    return;
-end
+global appDataStruct
+if isempty(appDataStruct), position=[]; return; end
 
 %If limits specified
 if ~(isempty(appDataStruct.secondaryAxesXLim) ||...
@@ -599,17 +596,14 @@ span = abs(v2 - v1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ResizeCallback(src, ~)
 
-global appDataStruct;
-
-if isempty(appDataStruct)
-    return;
-end
+global appDataStruct
+if isempty(appDataStruct), position=[]; return; end
 
 %Get userdata
 toolArray = get(src, 'userdata');
 
 if isempty(toolArray)
-    return;
+    return
 end
 
 nTools = length( toolArray );
@@ -677,10 +671,7 @@ clear appDataStructAux;
 function KeyPressCallback(src,eventdata)
 
 global appDataStruct
-
-if isempty(appDataStruct)
-    return;
-end
+if isempty(appDataStruct), position=[]; return; end
 
 currentCaracter = eventdata.Key;
 currentModifier = eventdata.Modifier;
@@ -876,8 +867,8 @@ switch(currentCaracter)
         toolArray(focusedTool).focusOnThisTool = 0;
         toolArray(nextFocusedTool).focusOnThisTool = 1;        
         if not(isempty(toolArray(focusedTool).toolIdHandle))
-            set(toolArray(focusedTool).toolIdHandle,'BackgroundColor', 'black', 'Color', 'white');
-            set(toolArray(nextFocusedTool).toolIdHandle,'BackgroundColor', 'red', 'Color', 'white');
+            set(toolArray(focusedTool).toolIdHandle, 'BackgroundColor', 'black', 'Color', 'white');
+            set(toolArray(nextFocusedTool).toolIdHandle, 'BackgroundColor', 'red', 'Color', 'white');
         end
         
         set( src, 'UserData', toolArray );
@@ -1006,10 +997,7 @@ refreshMagnifierToSecondaryAxesLink();
 function ButtonMotionCallback(src, ~)
 
 global appDataStruct
-
-if isempty(appDataStruct)
-    return;
-end
+if isempty(appDataStruct), return; end
 
 % pointerPos = get(appDataStructuct.figure.handle, 'CurrentPoint');
 % disp(sprintf('X: %g ; Y: %g', pointerPos(1), pointerPos(2)) );
@@ -1018,7 +1006,7 @@ getPointerArea();
 
 %If Left mouse button not pressed, exit
 if appDataStruct.ButtonDown == false
-    return;
+    return
 end
 
 
@@ -1103,11 +1091,8 @@ refreshMagnifierToSecondaryAxesLink();
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ButtonDownCallback(src, ~)
 
-global appDataStruct  
-
-if isempty(appDataStruct)     
-    return; 
-end
+global appDataStruct
+if isempty(appDataStruct), return; end
 
 if strcmpi( get(appDataStruct.figureHandle, 'SelectionType'), 'normal' )
     
@@ -1171,11 +1156,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ButtonUpCallback(src,eventdata)
 
-global appDataStruct  
-
-if isempty(appDataStruct)     
-    return; 
-end
+global appDataStruct
+if isempty(appDataStruct), return; end
 
 % if strcmp(appDataStruct.pointerArea, 'insideMagnifier')
 %     %Refresh zooming on secondary axis, based on magnifier position and extend
@@ -1202,11 +1184,8 @@ set(src, 'userdata', toolArray);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function DeleteCallback(src, ~)
 
-global appDataStruct;
-
-if isempty(appDataStruct)
-    return;
-end
+global appDataStruct
+if isempty(appDataStruct), return; end
 
 toolArray = get(src, 'UserData');
 
@@ -1236,11 +1215,8 @@ clear global appDataStructuct;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function pointerPositionOnFigureFrame = getPointerPositionOnFigureFrame()
 
-global appDataStruct  
-
-if isempty(appDataStruct)     
-    return; 
-end
+global appDataStruct
+if isempty(appDataStruct), return; end
 
 %Get position of mouse pointer on screen
 defaultUnits = get(appDataStruct.figureHandle,'Units');
@@ -1264,10 +1240,7 @@ set(appDataStruct.figureHandle, 'Units', defaultUnits);
 function getPointerArea()
 
 global appDataStruct
-
-if isempty(appDataStruct)
-    return;
-end
+if isempty(appDataStruct), return; end
 
 %Get current pointer position on figure frame
 pointerPositionOnFigureFrame = getPointerPositionOnFigureFrame();
@@ -1322,11 +1295,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function position = getFigurePositionInPixels()
 
-global appDataStruct  
-
-if isempty(appDataStruct)     
-    return; 
-end
+global appDataStruct
+if isempty(appDataStruct), return; end
 
 defaultUnits = get(appDataStruct.figureHandle,'Units');
 set(appDataStruct.figureHandle,'Units', 'pixels');
@@ -1354,11 +1324,7 @@ set(appDataStruct.figureHandle,'Units', defaultUnits);
 function position = getMainAxesPositionInPixels()
 
 global appDataStruct
-
-if isempty(appDataStruct)
-    position = [];
-    return;
-end
+if isempty(appDataStruct), position=[]; return; end
 
 %Characterize mainAxes in axes units
 mainAxisXLim = get( appDataStruct.mainAxesHandle, 'XLim' );
@@ -1395,7 +1361,7 @@ if ~strcmpi( dataAspectRatioMode, 'manual') && ~strcmpi( plotBoxAspectRatioMode,
     position = get(temporalAxes, 'Position');
     delete(temporalAxes);
     
-    return;
+    return
 end 
 
 %If DataAspectRatio to manual
@@ -1460,11 +1426,8 @@ delete(temporalAxes);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function position = getMagnifierPositionInPixels()
 
-global appDataStruct  
-
-if isempty(appDataStruct)     
-    return; 
-end
+global appDataStruct
+if isempty(appDataStruct), position=[]; return; end
 
 defaultUnits = get(appDataStruct.magnifierHandle, 'Units');
 set(appDataStruct.magnifierHandle, 'Units', 'pixels');
@@ -1490,11 +1453,8 @@ set(appDataStruct.magnifierHandle, 'Units', defaultUnits );
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function position = getSecondaryAxesPositionInPixels()
 
-global appDataStruct  
-
-if isempty(appDataStruct)     
-    return; 
-end
+global appDataStruct
+if isempty(appDataStruct), position=[]; return; end
 
 defaultUnits = get(appDataStruct.secondaryAxesHandle,'Units'); 
 set(appDataStruct.secondaryAxesHandle,'Units', 'pixels'); 
@@ -1520,23 +1480,13 @@ set(appDataStruct.secondaryAxesHandle,'Units', defaultUnits);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function setSecondaryAxesPositionInPixels( position )
 
-global appDataStruct  
-
-if isempty(appDataStruct)     
-    return; 
-end
+global appDataStruct
+if isempty(appDataStruct), return; end
 
 %Get position of secondary axes
 defaultUnits = get(appDataStruct.secondaryAxesHandle,'Units');
 set(appDataStruct.secondaryAxesHandle, 'Units', 'pixels');
-set(    appDataStruct.secondaryAxesHandle,...
-        'Position', [...
-                    position(1),...
-                    position(2),...
-                    position(3),...
-                    position(4)...
-                    ]...
-    ); 
+set(appDataStruct.secondaryAxesHandle, 'Position', position); 
 % tightInset = get( appDataStruct.secondaryAxes.handle, 'TightInset' ); 
 set(appDataStruct.secondaryAxesHandle,'Units', defaultUnits);
 
@@ -1569,12 +1519,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function setMagnifierPositionInPixels( position )
 
-
-global appDataStruct  
-
-if isempty(appDataStruct)     
-    return; 
-end
+global appDataStruct
+if isempty(appDataStruct), return; end
 
 %Limit position of magnifier within the main axes
 mainAxesPosition = getMainAxesPositionInPixels();
@@ -1648,16 +1594,13 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function refreshMagnifierToSecondaryAxesLink()
         
-global appDataStruct;
-
-if isempty(appDataStruct)
-    return;
-end
+global appDataStruct
+if isempty(appDataStruct), return; end
 
 %Don't display link if not requestred
 linkStyle = appDataStruct.linkDisplayStyle;
 if strcmpi( linkStyle(1), 'none')
-    return;
+    return
 end
 
 %Get position and size of figure in pixels
@@ -1993,10 +1936,7 @@ end
 function defaultPosition = computeSecondaryAxesDefaultPosition()
 
 global appDataStruct
-
-if isempty(appDataStruct)
-    return
-end
+if isempty(appDataStruct), defaultPosition=[]; return; end
 
 % If image, defualt aspect ratio of magnifier and secondary axes to [1, 1]
 childHandle = get(appDataStruct.mainAxesHandle, 'Children');
@@ -2043,11 +1983,8 @@ defaultPosition = [secondaryAxisPosition_X, secondaryAxisPosition_Y...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function defaultPosition = computeMagnifierDefaultPosition()
 
-global appDataStruct  
-
-if isempty(appDataStruct)     
-    return; 
-end
+global appDataStruct
+if isempty(appDataStruct), defaultPosition=[]; return; end
 
 % If image, defualt aspect ratio of magnifier and secondary axes to [1, 1]
 childHandle = get(appDataStruct.mainAxesHandle, 'Children');
