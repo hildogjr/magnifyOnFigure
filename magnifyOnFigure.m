@@ -1306,8 +1306,6 @@ if isempty(appDataStruct), position=[]; return; end
 %Characterize mainAxes in axes units
 mainAxisXLim = get( appDataStruct.mainAxesHandle, 'XLim' );
 mainAxisYLim = get( appDataStruct.mainAxesHandle, 'YLim' );
-spanX = determineSpan(mainAxisXLim(1), mainAxisXLim(2) );
-spanY = determineSpan(mainAxisYLim(1), mainAxisYLim(2));
 
 %Capture default units of mainAxes, and fix units to 'pixels'
 defaultUnits = get(appDataStruct.mainAxesHandle,'Units');
@@ -1321,55 +1319,32 @@ plotBoxAspectRatioMode = get(appDataStruct.mainAxesHandle, 'PlotBoxAspectRatioMo
 plotBoxAspectRatio = get(appDataStruct.mainAxesHandle, 'PlotBoxAspectRatio');
 
 %Determine correction values
-dataAspectRatioLimits = (spanX/dataAspectRatio(1))/(spanY/dataAspectRatio(2));
+dataAspectRatioLimits = (determineSpan(mainAxisXLim(1), mainAxisXLim(2) )/dataAspectRatio(1)) ...
+    / (determineSpan(mainAxisYLim(1), mainAxisYLim(2))/dataAspectRatio(2));
 plotBoxAspectRatioRelation = plotBoxAspectRatio(1)/plotBoxAspectRatio(2);
 mainAxesRatio = mainAxesPosition(3)/mainAxesPosition(4);
 
 %Id DataAspectRatio to auto and PlotBoxAspectRatio to auto
-if ~strcmpi( dataAspectRatioMode, 'manual') && ~strcmpi( plotBoxAspectRatioMode, 'manual')
-       
-    %Recover default units of mainAxes
-    set(appDataStruct.mainAxesHandle,'Units', defaultUnits);
 
-    %Obtain 'real' position from a temporal axes
-    temporalAxes = axes('Visible', 'off');
-    set(temporalAxes, 'Units', 'pixels');
-    set(temporalAxes, 'Position', mainAxesPosition);
-    position = get(temporalAxes, 'Position');
-    delete(temporalAxes);
-    
-    return
-end 
-
-%If DataAspectRatio to manual
+%Recover default units of mainAxes
+position = mainAxesPosition;
 if strcmpi( dataAspectRatioMode, 'manual')
-    if dataAspectRatioLimits <= mainAxesRatio       
-        position(4) = mainAxesPosition(4);
+    %If DataAspectRatio to manual
+    if dataAspectRatioLimits <= mainAxesRatio
         position(3) = mainAxesPosition(4) * dataAspectRatioLimits;
-        position(2) = mainAxesPosition(2);
         position(1) = mainAxesPosition(1) + (mainAxesPosition(3) - position(3))/2;
-        
-    else 
-        position(1) = mainAxesPosition(1);
-        position(3) = mainAxesPosition(3);
+    else
         position(4) = mainAxesPosition(3) / dataAspectRatioLimits;
-        position(2) = mainAxesPosition(2) + (mainAxesPosition(4) - position(4))/2;     
-        
+        position(2) = mainAxesPosition(2) + (mainAxesPosition(4) - position(4))/2;
     end
 elseif strcmpi( plotBoxAspectRatioMode, 'manual')
     % Or PlotBoxAspectRatio to manual
-    if plotBoxAspectRatioRelation <= mainAxesRatio       
-        position(4) = mainAxesPosition(4);
+    if plotBoxAspectRatioRelation <= mainAxesRatio
         position(3) = mainAxesPosition(4) * plotBoxAspectRatioRelation;
-        position(2) = mainAxesPosition(2);
         position(1) = mainAxesPosition(1) + (mainAxesPosition(3) - position(3))/2;
-        
     else
-        position(1) = mainAxesPosition(1);
-        position(3) = mainAxesPosition(3);
         position(4) = mainAxesPosition(3) / plotBoxAspectRatioRelation;
-        position(2) = mainAxesPosition(2) + (mainAxesPosition(4) - position(4))/2;  
-        
+        position(2) = mainAxesPosition(2) + (mainAxesPosition(4) - position(4))/2;
     end
 end
 
@@ -1982,12 +1957,8 @@ else
     magnifierPosition_Y = determineSpan(mean(mainAxisYLim), mainAxisYLim(1))*yMainAxisUnits2PixelsFactor - magnifierPosition_H/2;
 end
 
-defaultPosition = [...
-                        magnifierPosition_X+mainAxesPositionInPixels(1)...
-                        magnifierPosition_Y+mainAxesPositionInPixels(2)...
-                        magnifierPosition_W...
-                        magnifierPosition_H...
-                        ];
+defaultPosition = [magnifierPosition_X, magnifierPosition_Y, ...
+                magnifierPosition_W, magnifierPosition_H] + [mainAxesPositionInPixels([1, 2]), 0, 0];
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
