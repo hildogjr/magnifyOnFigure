@@ -648,9 +648,6 @@ appDataStruct.magnifierPosition = getMagnifierPositionInPixels();
 clear appDataStructAux;
 
 
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % NAME: KeyPressCallback
 % 
@@ -691,8 +688,8 @@ switch(currentCaracter)
                 %If 'freezeZoomAspectRatio' to 'on', be consistent
                 magnifierPosition(4) = position(4)*0.9; 
             end
-            magnifierPosition(1) = position(1)-(-position(3)+magnifierPosition(3))/2;
-            magnifierPosition(2) = position(2)-(-position(4)+magnifierPosition(4))/2;
+            magnifierPosition([1, 2]) = position([1, 2]) - ...
+                (-position([3, 4])+magnifierPosition([3, 4]))/2;
             setMagnifierPositionInPixels( magnifierPosition );
         end
         %Move secondary axes to the left        
@@ -709,8 +706,8 @@ switch(currentCaracter)
                 %If 'freezeZoomAspectRatio' to 'on', be consistent
                 secondaryAxesPosition(4) = position(4)*0.9; 
             end
-            secondaryAxesPosition(1) = position(1)-(-position(3)+secondaryAxesPosition(3))/2;
-            secondaryAxesPosition(2) = position(2)-(-position(4)+secondaryAxesPosition(4))/2;
+            secondaryAxesPosition([1, 2]) = position([1, 2]) - ...
+                (-position([3, 4])+secondaryAxesPosition([3, 4]))/2;
             setSecondaryAxesPositionInPixels( secondaryAxesPosition ); 
         end
         
@@ -735,8 +732,8 @@ switch(currentCaracter)
                 %If 'freezeZoomAspectRatio' to 'on', be consistent
                 magnifierPosition(4) = position(4)*1.1; 
             end
-            magnifierPosition(1) = position(1)-(-position(3)+magnifierPosition(3))/2;
-            magnifierPosition(2) = position(2)-(-position(4)+magnifierPosition(4))/2;
+            magnifierPosition([1, 2]) = position([1, 2]) - ...
+                (-position([3, 4])+magnifierPosition([3, 4]))/2;
             setMagnifierPositionInPixels( magnifierPosition );
         end
         %Move secondary axes to the right        
@@ -753,8 +750,8 @@ switch(currentCaracter)
                 %If 'freezeZoomAspectRatio' to 'on', be consistent
                 secondaryAxesPosition(4) = position(4)*1.1; 
             end
-            secondaryAxesPosition(1) = position(1)-(-position(3)+secondaryAxesPosition(3))/2;
-            secondaryAxesPosition(2) = position(2)-(-position(4)+secondaryAxesPosition(4))/2;
+            secondaryAxesPosition([1, 2]) = position([1, 2]) - ...
+                (-position([3, 4])+secondaryAxesPosition([3, 4]))/2;
             setSecondaryAxesPositionInPixels( secondaryAxesPosition );  
         end
         
@@ -779,8 +776,8 @@ switch(currentCaracter)
                 magnifierPosition(3) = position(3)*1.1; 
             end
             magnifierPosition(4) = position(4)*1.1;
-            magnifierPosition(1) = position(1)-(-position(3)+magnifierPosition(3))/2;
-            magnifierPosition(2) = position(2)-(-position(4)+magnifierPosition(4))/2;
+            magnifierPosition([1, 2]) = position([1, 2]) - ...
+                (-position([3, 4])+magnifierPosition([3, 4]))/2;
             setMagnifierPositionInPixels( magnifierPosition );
         end
         %Move secondary axes to the top        
@@ -797,8 +794,8 @@ switch(currentCaracter)
                 secondaryAxesPosition(3) = position(3)*1.1;
             end
             secondaryAxesPosition(4) = position(4)*1.1;
-            secondaryAxesPosition(1) = position(1)-(-position(3)+secondaryAxesPosition(3))/2;
-            secondaryAxesPosition(2) = position(2)-(-position(4)+secondaryAxesPosition(4))/2;
+            secondaryAxesPosition([1, 2]) = position([1, 2]) - ...
+                (-position([3, 4])+secondaryAxesPosition([3, 4]))/2;
             setSecondaryAxesPositionInPixels( secondaryAxesPosition );   
         end
         
@@ -823,8 +820,8 @@ switch(currentCaracter)
                 magnifierPosition(3) = position(3)*0.9; 
             end
             magnifierPosition(4) = position(4)*0.9;
-            magnifierPosition(1) = position(1)-(-position(3)+magnifierPosition(3))/2;
-            magnifierPosition(2) = position(2)-(-position(4)+magnifierPosition(4))/2;
+            magnifierPosition([1, 2]) = position([1, 2]) - ...
+                (-position([3, 4])+magnifierPosition([3, 4]))/2;
             setMagnifierPositionInPixels( magnifierPosition );
         end
         %Move secondary axes to the bottom        
@@ -841,8 +838,8 @@ switch(currentCaracter)
                 secondaryAxesPosition(3) = position(3)*0.9; 
             end
             secondaryAxesPosition(4) = position(4)*0.9;
-            secondaryAxesPosition(1) = position(1)-(-position(3)+secondaryAxesPosition(3))/2;
-            secondaryAxesPosition(2) = position(2)-(-position(4)+secondaryAxesPosition(4))/2;
+            secondaryAxesPosition([1, 2]) = position([1, 2]) - ...
+                (-position([3, 4])+secondaryAxesPosition([3, 4]))/2;
             setSecondaryAxesPositionInPixels( secondaryAxesPosition );        
         end      
 
@@ -981,7 +978,6 @@ refreshMagnifierToSecondaryAxesLink();
 % set(src, 'userData', toolArray); 
 
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % NAME: ButtonMotionCallback
 % 
@@ -1060,6 +1056,7 @@ end
 %Update link between secondary axes and magnifier
 refreshMagnifierToSecondaryAxesLink();
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % NAME: ButtonDownCallback
 % 
@@ -1124,6 +1121,7 @@ elseif strcmpi( get(appDataStruct.figureHandle, 'SelectionType'), 'open' )
     
 end
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % NAME: ButtonUpCallback
 % 
@@ -1151,6 +1149,7 @@ toolArray = get(src, 'userdata');
 focusedTool = find([toolArray.focusOnThisTool] == 1);
 toolArray(focusedTool).ButtonDown = false;
 set(src, 'userdata', toolArray);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % NAME: DeleteCallback
@@ -1205,6 +1204,7 @@ set(appDataStruct.figureHandle, 'Units', 'pixels');
 pointerPositionOnFigureFrame = get(appDataStruct.figureHandle,'CurrentPoint');
 set(appDataStruct.figureHandle, 'Units', defaultUnits);
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % NAME: getPointerArea
 % 
@@ -1253,6 +1253,7 @@ if all(point >= corners([1,2])) && all(point <= corners([1,2])+ corners([3,4]))
 end
 inside = false;
 return
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % NAME: getFigurePositionInPixels
@@ -1359,7 +1360,6 @@ position = get(temporalAxes, 'Position');
 delete(temporalAxes);
 
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % NAME: getMagnifierPositionInPixels
 % 
@@ -1385,6 +1385,7 @@ defaultUnits = get(appDataStruct.magnifierHandle, 'Units');
 set(appDataStruct.magnifierHandle, 'Units', 'pixels');
 position = get(appDataStruct.magnifierHandle, 'Position');
 set(appDataStruct.magnifierHandle, 'Units', defaultUnits );
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % NAME: getSecondaryAxesPositionInPixels
@@ -1529,8 +1530,6 @@ if ~isempty(toolArray)
     set(appDataStruct.figureHandle, 'userdata', toolArray);
 end
 
-
-
          
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % NAME: refreshMagnifierToSecondaryAxesLink
@@ -1566,7 +1565,6 @@ set(appDataStruct.secondaryAxesHandle, 'Units', defaultUnits);
 
 %Get position and size of secondary axes in pixels
 magnifierPosition = getMagnifierPositionInPixels();
-   
 
 if strcmpi( linkStyle, 'straight')
 
@@ -1809,6 +1807,7 @@ if strcmpi( linkStyle, 'elbow')
     end
 end
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % NAME: intersectionPointInPixels
 % 
@@ -1865,6 +1864,7 @@ if intersectionPoint(1)<min([X1(1) X2(1)]) ||...
         
     intersectionPoint = [];
 end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % NAME: computeSecondaryAxesDefaultPosition
@@ -2042,9 +2042,8 @@ function obj = initializeToolStruct(varargin)
         obj = structIn;    
        
     end
-    
-    
-    
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % NAME: updateToolId
 % 
@@ -2098,5 +2097,3 @@ switch modeStr
 end
 
 set(toolArray.figureHandle, 'currentAxes', toolArray.mainAxesHandle);
-
-    
