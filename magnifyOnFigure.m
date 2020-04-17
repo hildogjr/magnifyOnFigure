@@ -430,8 +430,8 @@ if isempty(toolArray)
     toolArray.focusOnThisTool = true;
 else
     %Set focus to this tool
-    focusedTool = find([toolArray.focusOnThisTool] == 1);
-    toolArray(focusedTool).focusOnThisTool = false;
+    %focusedTool = find([toolArray.focusOnThisTool] == 1);
+    toolArray([toolArray.focusOnThisTool] == 1).focusOnThisTool = false;
         
     %search tool ID
     indexFoundToolId = find([toolArray.toolId] == toolId);    
@@ -1133,7 +1133,7 @@ end
 %                   
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function ButtonUpCallback(src,eventdata)
+function ButtonUpCallback(src, ~)
 
 global appDataStruct
 if isempty(appDataStruct), return; end
@@ -1146,8 +1146,8 @@ if isempty(appDataStruct), return; end
 appDataStruct.ButtonDown = false;
 
 toolArray = get(src, 'userdata');
-focusedTool = find([toolArray.focusOnThisTool] == 1);
-toolArray(focusedTool).ButtonDown = false;
+%focusedTool = find([toolArray.focusOnThisTool] == 1);
+toolArray([toolArray.focusOnThisTool] == 1).ButtonDown = false;
 set(src, 'userdata', toolArray);
 
 
