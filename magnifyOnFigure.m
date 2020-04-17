@@ -108,9 +108,10 @@ function varargout = magnifyOnFigure( varargin )
 % KNOWN ISSUES:
 %   - Secondary axes are not updated when the zoomming or panning tools of the figure are used.
 %   - Degraded performance for big data sets or big window sizes.
-%   - The size and position of the magnifier are modified for
-%   'PaperPositionMode' equal to 'auto', when the figure is printed to file
-%   through 'print'
+%   - The size and position of the magnifier are modified for 'PaperPositionMode' equal to
+%   'auto', when the figure is printed to file through 'print'.
+%   - Doesn't work with dual plot (such `plotyy` function).
+%   - Resizing the plot doesn't keep the magnif point.
 %
 % CHANGE HISTORY:
 % 
@@ -601,33 +602,26 @@ if isempty(appDataStruct), position=[]; return; end
 
 %Get userdata
 toolArray = get(src, 'userdata');
-
-if isempty(toolArray)
-    return
-end
+if isempty(toolArray), return; end
 
 nTools = length( toolArray );
 
 %Store Old&New Figure positions
 oldFigurePosition = toolArray(1).figurePosition;
-newFigurePosition = getFigurePositionInPixels(); 
+newFigurePosition = getFigurePositionInPixels();
+
+factor = [newFigurePosition(3)/oldFigurePosition(3), newFigurePosition(4)/oldFigurePosition(4)];
     
 %Backup global appDataStruct 
 appDataStructAux = appDataStruct;
 
 for i=1:nTools
-    
     %Modify global vaiable, accessed by functions called below
     appDataStruct = initializeToolStruct( toolArray(i) );
     
     %Set position of secondaryAxes (automatically modified)
     toolArray(i).secondaryAxesPosition = getSecondaryAxesPositionInPixels();
-       
-    toolArray(i).magnifierPosition(1) = toolArray(i).magnifierPosition(1) * newFigurePosition(3)/oldFigurePosition(3);
-    toolArray(i).magnifierPosition(2) = toolArray(i).magnifierPosition(2) * newFigurePosition(4)/oldFigurePosition(4);
-    toolArray(i).magnifierPosition(3) = toolArray(i).magnifierPosition(3) * newFigurePosition(3)/oldFigurePosition(3);
-    toolArray(i).magnifierPosition(4) = toolArray(i).magnifierPosition(4) * newFigurePosition(4)/oldFigurePosition(4);    
-    setMagnifierPositionInPixels( toolArray(i).magnifierPosition );                            
+    setMagnifierPositionInPixels( toolArray(i).magnifierPosition .* [factor, factor]);                            
         
     %Update view limits on secondary axis  
     refreshSecondaryAxisLimits();
@@ -734,12 +728,12 @@ switch(currentCaracter)
         %Expand magnifier on the X axis
         if strcmp(currentModifier, 'shift')
             position = getMagnifierPositionInPixels();
-            magnifierPosition(3) = position(3)*(1 + 0.1);
+            magnifierPosition(3) = position(3)*1.1;
             if strcmpi( appDataStruct.globalZoomMode, 'off')
                 magnifierPosition(4) = position(4);
             else
                 %If 'freezeZoomAspectRatio' to 'on', be consistent
-                magnifierPosition(4) = position(4)*(1 + 0.1); 
+                magnifierPosition(4) = position(4)*1.1; 
             end
             magnifierPosition(1) = position(1)-(-position(3)+magnifierPosition(3))/2;
             magnifierPosition(2) = position(2)-(-position(4)+magnifierPosition(4))/2;
@@ -752,12 +746,12 @@ switch(currentCaracter)
         %Expand secondary axes on the X axis        
         if strcmp(currentModifier, 'alt')
             position = getSecondaryAxesPositionInPixels();
-            secondaryAxesPosition(3) = position(3)*(1 + 0.1);
+            secondaryAxesPosition(3) = position(3)*1.1;
             if strcmpi( appDataStruct.globalZoomMode, 'off')
                 secondaryAxesPosition(4) = position(4);
             else
                 %If 'freezeZoomAspectRatio' to 'on', be consistent
-                secondaryAxesPosition(4) = position(4)*(1 + 0.1); 
+                secondaryAxesPosition(4) = position(4)*1.1; 
             end
             secondaryAxesPosition(1) = position(1)-(-position(3)+secondaryAxesPosition(3))/2;
             secondaryAxesPosition(2) = position(2)-(-position(4)+secondaryAxesPosition(4))/2;
@@ -1024,24 +1018,15 @@ switch appDataStruct.pointerArea
        
         %Get pointer position on figure's frame
         currentPointerPositionOnFigureFrame = getPointerPositionOnFigureFrame();
-        
         pointerPositionOnButtonDown = appDataStruct.pointerPositionOnButtonDown;
         
         %Modify position
-        secondaryAxisPosition_W = appDataStruct.secondaryAxesPosition(3);
-        secondaryAxisPosition_H = appDataStruct.secondaryAxesPosition(4);
-        secondaryAxisPosition_X = appDataStruct.secondaryAxesPosition(1) + (-pointerPositionOnButtonDown(1)+currentPointerPositionOnFigureFrame(1));
-        secondaryAxisPosition_Y = appDataStruct.secondaryAxesPosition(2) + (-pointerPositionOnButtonDown(2)+currentPointerPositionOnFigureFrame(2));
+        secondaryAxisPosition = appDataStruct.secondaryAxesPosition + ...
+            [-pointerPositionOnButtonDown([1, 2])+currentPointerPositionOnFigureFrame([1, 2]) , 0, 0];
         appDataStruct.pointerPositionOnButtonDown = currentPointerPositionOnFigureFrame;
         
         %Set initial position and size of secondary axes
-        setSecondaryAxesPositionInPixels( [...
-                                            secondaryAxisPosition_X,...
-                                            secondaryAxisPosition_Y,...
-                                            secondaryAxisPosition_W,...
-                                            secondaryAxisPosition_H...
-                                            ] );
-        
+        setSecondaryAxesPositionInPixels( secondaryAxisPosition );
         
     case 'insideMagnifier'                 
         %Get magnifier current position and size
@@ -1049,23 +1034,15 @@ switch appDataStruct.pointerArea
         
         %Get pointer position on figure's frame
         currentPointerPosition = getPointerPositionOnFigureFrame();
-        
         pointerPositionOnButtonDown = appDataStruct.pointerPositionOnButtonDown;
         
         %Modify magnifier position
-        magnifierPosition_W = appDataStruct.magnifierPosition(3);
-        magnifierPosition_H = appDataStruct.magnifierPosition(4);
-        magnifierPosition_X = appDataStruct.magnifierPosition(1) + (-pointerPositionOnButtonDown(1)+currentPointerPosition(1));
-        magnifierPosition_Y = appDataStruct.magnifierPosition(2) + (-pointerPositionOnButtonDown(2)+currentPointerPosition(2));
+        magnifierPosition = appDataStruct.magnifierPosition + ...
+            [-pointerPositionOnButtonDown([1, 2])+currentPointerPosition([1, 2]), 0, 0];
         appDataStruct.pointerPositionOnButtonDown = currentPointerPosition;
         
         %Set initial position and size of magnifying rectangle
-        setMagnifierPositionInPixels( [...
-                                          magnifierPosition_X...
-                                          magnifierPosition_Y...
-                                          magnifierPosition_W...
-                                          magnifierPosition_H...
-                                       ] );
+        setMagnifierPositionInPixels( magnifierPosition );
         
         %Refresh zooming on secondary axis, based on magnifier position and extend
         refreshSecondaryAxisLimits();    
@@ -1140,7 +1117,6 @@ elseif strcmpi( get(appDataStruct.figureHandle, 'SelectionType'), 'open' )
             set(toolArray(nextFocusedTool).toolIdHandle,'BackgroundColor', 'red', 'Color', 'white');
         end        
         set( src, 'UserData', toolArray );
-        
         
     else
         appDataStruct = appDataStructAux;
@@ -1249,38 +1225,34 @@ if isempty(appDataStruct), return; end
 
 %Get current pointer position on figure frame
 pointerPositionOnFigureFrame = getPointerPositionOnFigureFrame();
-
 %Get current secondaryAxes position
 secondaryAxesPosition = getSecondaryAxesPositionInPixels();
-
 %Get current magnifier position
 magnifierPosition = getMagnifierPositionInPixels();
 
 %If mouse pointer on the secondary axis
-if  pointerPositionOnFigureFrame(1)>=secondaryAxesPosition(1) &&...
-    pointerPositionOnFigureFrame(1)<=secondaryAxesPosition(1)+secondaryAxesPosition(3) &&...
-    pointerPositionOnFigureFrame(2)>=secondaryAxesPosition(2) &&...
-    pointerPositionOnFigureFrame(2)<=secondaryAxesPosition(2)+secondaryAxesPosition(4)
+if isinside(pointerPositionOnFigureFrame, secondaryAxesPosition)
     %Pointer inside secondary axis
     set(appDataStruct.figureHandle, 'Pointer', 'fleur');
-    
     appDataStruct.pointerArea = 'insideSecondaryAxis';
     
-elseif  pointerPositionOnFigureFrame(1)>=magnifierPosition(1) &&...
-        pointerPositionOnFigureFrame(1)<=magnifierPosition(1)+magnifierPosition(3) &&...
-        pointerPositionOnFigureFrame(2)>=magnifierPosition(2) &&...
-        pointerPositionOnFigureFrame(2)<=magnifierPosition(2)+magnifierPosition(4) 
+elseif isinside(pointerPositionOnFigureFrame, magnifierPosition)
     %Pointer inside magnifier
     set(appDataStruct.figureHandle, 'Pointer', 'fleur');
-    
     appDataStruct.pointerArea = 'insideMagnifier';
      
 else
     %Otherwise
-    set(appDataStruct.figureHandle, 'Pointer', 'arrow');  
-    
+    set(appDataStruct.figureHandle, 'Pointer', 'arrow');
     appDataStruct.pointerArea = 'none';
 end
+function inside = isinside(point, corners)
+if all(point >= corners([1,2])) && all(point <= corners([1,2])+ corners([3,4]))
+    inside = true;
+    return
+end
+inside = false;
+return
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % NAME: getFigurePositionInPixels
@@ -1380,7 +1352,7 @@ if strcmpi( dataAspectRatioMode, 'manual')
     else 
         position(1) = mainAxesPosition(1);
         position(3) = mainAxesPosition(3);
-        position(4) = mainAxesPosition(3)/dataAspectRatioLimits;
+        position(4) = mainAxesPosition(3) / dataAspectRatioLimits;
         position(2) = mainAxesPosition(2) + (mainAxesPosition(4) - position(4))/2;     
         
     end
@@ -1395,7 +1367,7 @@ elseif strcmpi( plotBoxAspectRatioMode, 'manual')
     else
         position(1) = mainAxesPosition(1);
         position(3) = mainAxesPosition(3);
-        position(4) = mainAxesPosition(3)/plotBoxAspectRatioRelation;
+        position(4) = mainAxesPosition(3) / plotBoxAspectRatioRelation;
         position(2) = mainAxesPosition(2) + (mainAxesPosition(4) - position(4))/2;  
         
     end
@@ -1531,14 +1503,12 @@ if isempty(appDataStruct), return; end
 mainAxesPosition = getMainAxesPositionInPixels();
 if position(1)<mainAxesPosition(1)
     position(1) = mainAxesPosition(1);
-end
-if position(1)+position(3)>mainAxesPosition(1)+mainAxesPosition(3)
+elseif position(1)+position(3)>mainAxesPosition(1)+mainAxesPosition(3)
     position(1) = mainAxesPosition(1)+mainAxesPosition(3)-position(3);
 end
 if position(2)<mainAxesPosition(2)
     position(2) = mainAxesPosition(2);
-end
-if position(2)+position(4)>mainAxesPosition(2)+mainAxesPosition(4)
+elseif position(2)+position(4)>mainAxesPosition(2)+mainAxesPosition(4)
     position(2) = mainAxesPosition(2)+mainAxesPosition(4)-position(4);
 end
 
@@ -1579,8 +1549,8 @@ appDataStruct.magnifierPosition = getMagnifierPositionInPixels();
 %Update 'userdata'
 toolArray = get(appDataStruct.figureHandle, 'userdata');
 if ~isempty(toolArray)
-    focusedTool = find([toolArray.focusOnThisTool] == 1);
-    toolArray(focusedTool).magnifierPosition = appDataStruct.magnifierPosition;
+    %focusedTool = find([toolArray.focusOnThisTool] == 1);
+    toolArray([toolArray.focusOnThisTool] == 1).magnifierPosition = appDataStruct.magnifierPosition;
     set(appDataStruct.figureHandle, 'userdata', toolArray);
 end
 
@@ -1938,10 +1908,10 @@ end
 %                               Height of the axis frame
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function defaultPosition = computeSecondaryAxesDefaultPosition()
+function secondaryAxisPosition = computeSecondaryAxesDefaultPosition()
 
 global appDataStruct
-if isempty(appDataStruct), defaultPosition=[]; return; end
+if isempty(appDataStruct), secondaryAxisPosition=[]; return; end
 
 % If image, defualt aspect ratio of magnifier and secondary axes to [1, 1]
 childHandle = get(appDataStruct.mainAxesHandle, 'Children');
@@ -1953,20 +1923,15 @@ mainAxesPosition = getMainAxesPositionInPixels();
 
 if plotFlag
     %Set initial position and size for secondary axis
-    secondaryAxisPosition_W = mainAxesPosition(3)*0.3;
-    secondaryAxisPosition_H = mainAxesPosition(4)*0.3;
-    secondaryAxisPosition_X = mainAxesPosition(1)+mainAxesPosition(3)-secondaryAxisPosition_W-10;
-    secondaryAxisPosition_Y = mainAxesPosition(2)+mainAxesPosition(4)-secondaryAxisPosition_H-10;
+    secondaryAxisPosition([3, 4]) = mainAxesPosition([3, 4])* 0.3;
+    secondaryAxisPosition([1, 2]) = mainAxesPosition([1, 2]) + ...
+        mainAxesPosition([3, 4]) - secondaryAxisPosition([3, 4]) -10;
 else%if imageFlag
     %Set initial position and size for secondary axis
-    secondaryAxisPosition_W = mainAxesPosition(3)*0.3;
-    secondaryAxisPosition_H = mainAxesPosition(4)*0.3;
-    secondaryAxisPosition_X = mainAxesPosition(1)+mainAxesPosition(3)-secondaryAxisPosition_W-10;
-    secondaryAxisPosition_Y = mainAxesPosition(2)+mainAxesPosition(4)-secondaryAxisPosition_H-10;
+    secondaryAxisPosition([3, 4]) = mainAxesPosition([3, 4])* 0.3;
+    secondaryAxisPosition([1, 2]) = mainAxesPosition([1, 2]) + ...
+        mainAxesPosition([3, 4]) - secondaryAxisPosition([3, 4]) -10;
 end
-
-defaultPosition = [secondaryAxisPosition_X, secondaryAxisPosition_Y...
-                    secondaryAxisPosition_W, secondaryAxisPosition_H];
                         
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2125,11 +2090,20 @@ function toolArray = updateToolId( toolArray, toolNum, modeStr )
 toolArray = toolArray(toolNum);
 set(toolArray.figureHandle, 'currentAxes', toolArray.secondaryAxesHandle);
 
+if strcmp(modeStr, 'toggle')
+        if isempty(toolArray.toolIdHandle)
+            modeStr = 'show';
+        else
+            modeStr = 'hide';
+        end
+end
+
 switch modeStr
     case 'show'
-            xL = get(toolArray.secondaryAxesHandle, 'XLim');
-            yL = get(toolArray.secondaryAxesHandle, 'YLim');
-            toolArray.toolIdHandle = text( (xL(2)+xL(1))/2, (yL(2)+yL(1))/2, num2str(toolNum));
+            toolArray.toolIdHandle = text( ...
+                mean(get(toolArray.secondaryAxesHandle, 'XLim')), ...
+                mean(get(toolArray.secondaryAxesHandle, 'YLim')), ...
+                num2str(toolNum));
             set(toolArray.toolIdHandle, 'FontSize', 30, 'FontWeight', 'bold' );
             if toolArray.focusOnThisTool
                 set(toolArray.toolIdHandle,'BackgroundColor', 'red', 'Color', 'white');
@@ -2139,26 +2113,11 @@ switch modeStr
     case 'hide'
             delete(toolArray.toolIdHandle);
             toolArray.toolIdHandle = [];
-    case 'toggle'
-        if isempty(toolArray.toolIdHandle)
-            xL = get(toolArray.secondaryAxesHandle, 'XLim');
-            yL = get(toolArray.secondaryAxesHandle, 'YLim');
-            toolArray.toolIdHandle = text( (xL(2)+xL(1))/2, (yL(2)+yL(1))/2, num2str(toolNum));
-            set(toolArray.toolIdHandle, 'FontSize', 30, 'FontWeight', 'bold' );
-            if toolArray.focusOnThisTool
-                set(toolArray.toolIdHandle,'BackgroundColor', 'red', 'Color', 'white');
-            else
-                set(toolArray.toolIdHandle,'BackgroundColor', 'black', 'Color', 'white');
-            end
-        else
-            delete(toolArray.toolIdHandle);
-            toolArray.toolIdHandle = [];
-        end
     otherwise
-        if not(isempty(toolArray.toolIdHandle))        
-            xL = get(toolArray.secondaryAxesHandle, 'XLim');
-            yL = get(toolArray.secondaryAxesHandle, 'YLim');
-            set(toolArray.toolIdHandle, 'Position', [(xL(2)+xL(1))/2, (yL(2)+yL(1))/2] );
+        if not(isempty(toolArray.toolIdHandle))
+            set(toolArray.toolIdHandle, 'Position', [ ...
+                mean(get(toolArray.secondaryAxesHandle, 'XLim')), ...
+                mean(get(toolArray.secondaryAxesHandle, 'YLim'))] );
             if toolArray.focusOnThisTool
                 set(toolArray.toolIdHandle,'BackgroundColor', 'red', 'Color', 'white');
             else
