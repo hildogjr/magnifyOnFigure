@@ -1,6 +1,6 @@
 `magnifyOnFigure` Matlab function. Allow to plot a zoomed graph inside of the currrent one.
 
-![image](./image_example.png)
+<img src="./image_example.png" width="25%">
 
 # History
 
