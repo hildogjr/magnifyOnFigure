@@ -1,5 +1,5 @@
 Copyright (c) 2009, David Fernandez Prim
-Copyright (c) 2020, Hildo Guillardi Júnior (GUILARDI JR, HILDO)
+Copyright (c) 2020, Hildo Guillardi Júnior (GUILLARDI JR, HILDO)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
