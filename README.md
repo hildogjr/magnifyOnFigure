@@ -4,7 +4,7 @@
 
 # History
 
-Powerful on-figure magnifier, suitable for the publication of compact graphical results created [fisrt publish](https://www.mathworks.com/matlabcentral/fileexchange/26007-on-figure-magnifier) by [David Fernandez-Prim](https://www.mathworks.com/matlabcentral/profile/authors/1940299-david-fernandez-prim).
+Powerful on-figure magnifier, suitable for the publication of compact graphical results created [first publish](https://www.mathworks.com/matlabcentral/fileexchange/26007-on-figure-magnifier) by [David Fernandez-Prim](https://www.mathworks.com/matlabcentral/profile/authors/1940299-david-fernandez-prim).
 
 Fix some old Matlab version behaviours, allow to use in any axis (the last one active) and fix the behaviour in log graph by [Hildo Guillardi Júnior](https://www.mathworks.com/matlabcentral/profile/authors/3318785-hildo).
 
